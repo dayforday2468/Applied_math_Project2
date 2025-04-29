@@ -7,7 +7,7 @@ from scipy.integrate import solve_ivp
 du = 0.01
 dv = 0.03
 L = 1.0
-Nx = 50
+Nx = 50 # number of patches
 x = np.linspace(0, L, Nx)
 dx = x[1] - x[0]
 K1=500
@@ -98,6 +98,7 @@ def animate(i):
     line_v.set_data(x, V[:, i])
     return line_u, line_v
 
+# Animation speed can be controled by interval
 ani = animation.FuncAnimation(fig, animate, frames=len(t_eval), init_func=init, interval=50, blit=True)
 
 plt.show()
