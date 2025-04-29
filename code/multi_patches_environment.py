@@ -1,6 +1,8 @@
 import numpy as np
+import os
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
+from matplotlib.animation import PillowWriter
 from scipy.integrate import solve_ivp
 
 # model parameters
@@ -76,29 +78,47 @@ sol = solve_ivp(pde_system, t_span, y0, t_eval=t_eval)
 U = sol.y[:Nx, :]
 V = sol.y[Nx:, :]
 
-fig, ax = plt.subplots(figsize=(12,6))
+def create_animation():
+    fig, ax = plt.subplots(figsize=(12,6))
+    line_u, = ax.plot([], [], label='u(x,t)', linewidth=2.5)
+    line_v, = ax.plot([], [], label='v(x,t)', linewidth=1.5)
+    ax.set_xlim(0, L)
+    ax.set_ylim(0, np.max([U.max(), V.max()]) * 1.1)
+    ax.set_xlabel('x')
+    ax.set_ylabel('Population')
+    ax.set_title('Population over time')
+    ax.grid()
+    ax.legend()
 
-line_u, = ax.plot([], [], label='u(x,t)', linewidth=2.5)
-line_v, = ax.plot([], [], label='v(x,t)', linewidth=1.5)
-ax.set_xlim(0, L)
-ax.set_ylim(0, np.max([U.max(), V.max()]) * 1.1)
-ax.set_xlabel('x')
-ax.set_ylabel('Population')
-ax.set_title('Population over time')
-ax.grid()
-ax.legend()
+    def init():
+        line_u.set_data([], [])
+        line_v.set_data([], [])
+        return line_u, line_v
 
-def init():
-    line_u.set_data([], [])
-    line_v.set_data([], [])
-    return line_u, line_v
+    def animate(i):
+        line_u.set_data(x, U[:, i])
+        line_v.set_data(x, V[:, i])
+        return line_u, line_v
 
-def animate(i):
-    line_u.set_data(x, U[:, i])
-    line_v.set_data(x, V[:, i])
-    return line_u, line_v
+    ani = animation.FuncAnimation(fig, animate, frames=len(t_eval), init_func=init,interval=100, blit=True)
+    return ani
 
-# Animation speed can be controled by interval
-ani = animation.FuncAnimation(fig, animate, frames=len(t_eval), init_func=init, interval=50, blit=True)
+def show_animation():
+    ani = create_animation()
+    plt.show()
 
-plt.show()
+def save_animation():
+    ani = create_animation()
+
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    result_dir = os.path.join(current_dir, "../result")
+    result_dir = os.path.join(result_dir, "animation")
+    os.makedirs(result_dir, exist_ok=True)
+
+    filename = f"{initial_condition}_K2_{K2}_dv_{dv:.2f}.gif"
+    filepath = os.path.join(result_dir, filename)
+
+    ani.save(filepath, writer=PillowWriter(fps=10))
+    print(f"Animation saved to {filepath}")
+
+save_animation()
