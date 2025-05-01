@@ -147,5 +147,5 @@ def save_animation():
     ani.save(filepath, writer=PillowWriter(fps=10))
     print(f"Animation saved to {filepath}")
 
-# save_animation()
+save_animation()
 save_snapshots()
