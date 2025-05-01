@@ -103,6 +103,32 @@ def create_animation():
     ani = animation.FuncAnimation(fig, animate, frames=len(t_eval), init_func=init,interval=100, blit=True)
     return ani
 
+def save_snapshots():
+    times = [1,5,10,15,20,25]
+    indices = [np.argmin(np.abs(t_eval - t)) for t in times]
+
+    filename_wo_ext = f"{initial_condition}_K2_{K2}_dv_{dv:.2f}"
+    
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    base_dir = os.path.join(current_dir, "../result/animation", filename_wo_ext)
+    os.makedirs(base_dir, exist_ok=True)
+
+    for i, t_idx in enumerate(indices):
+        plt.figure(figsize=(10, 5))
+        plt.plot(x, U[:, t_idx], label='u (slow)', linewidth=2.5)
+        plt.plot(x, V[:, t_idx], label='v (fast)', linewidth=1.5)
+        plt.xlabel("Space (x)")
+        plt.ylabel("Population")
+        plt.title(f"Population at t = {int(t_eval[t_idx])}")
+        plt.legend()
+        plt.grid(True)
+
+        snapshot_path = os.path.join(base_dir, f"snapshot_t{int(t_eval[t_idx])}.png")
+        plt.savefig(snapshot_path)
+        plt.close()
+        print(f"Saved snapshot: {snapshot_path}")
+
+
 def show_animation():
     ani = create_animation()
     plt.show()
@@ -121,4 +147,5 @@ def save_animation():
     ani.save(filepath, writer=PillowWriter(fps=10))
     print(f"Animation saved to {filepath}")
 
-save_animation()
+# save_animation()
+save_snapshots()
